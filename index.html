@@ -1030,6 +1030,7 @@
                     <span class="icon">💝</span>
                     <span>点击放大查看</span>
                 </div>
+                <button class="video-switch-btn" id="switchPhotosBtn">切换相册</button>
             </div>
 
             <div class="gallery" id="gallery">
@@ -1095,7 +1096,11 @@
     </div>
 
     <script>
-        const PHOTOS_DIR = 'https://myvideos.tos-cn-beijing.volces.com/photos/';
+        const PHOTOS_DIRS = {
+            photos: 'https://myvideos.tos-cn-beijing.volces.com/photos/',
+            photos2: 'https://myvideos.tos-cn-beijing.volces.com/photos2/'
+        };
+        let currentPhotosDir = 'photos';
         const TOTAL_PHOTOS = 50;
         const PHOTOS_PER_PAGE = 16;
         const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -1195,16 +1200,36 @@
 
         switchVideoBtn.addEventListener('click', switchVideo);
 
-        const photoList = [];
-        for (let i = 1; i <= TOTAL_PHOTOS; i++) {
-            const num = String(i).padStart(3, '0');
-            photoList.push({
-                id: i,
-                src: `${PHOTOS_DIR}${num}.jpg`,
-                caption: `照片 ${i}`,
-                number: num
-            });
+        const switchPhotosBtn = document.getElementById('switchPhotosBtn');
+
+        function switchPhotos() {
+            currentPhotosDir = currentPhotosDir === 'photos' ? 'photos2' : 'photos';
+            switchPhotosBtn.textContent = currentPhotosDir === 'photos' ? '切换相册' : '返回相册';
+            photoList = generatePhotoList();
+            gallery.innerHTML = '';
+            loadedPhotos = 0;
+            currentPhotoIndex = 0;
+            loadMoreContainer.style.display = 'block';
+            loadMorePhotos();
         }
+
+        switchPhotosBtn.addEventListener('click', switchPhotos);
+
+        function generatePhotoList() {
+            const list = [];
+            for (let i = 1; i <= TOTAL_PHOTOS; i++) {
+                const num = String(i).padStart(3, '0');
+                list.push({
+                    id: i,
+                    src: `${PHOTOS_DIRS[currentPhotosDir]}${num}.jpg`,
+                    caption: `照片 ${i}`,
+                    number: num
+                });
+            }
+            return list;
+        }
+
+        let photoList = generatePhotoList();
 
         let currentPhotoIndex = 0;
         let loadedPhotos = 0;
