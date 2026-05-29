@@ -362,6 +362,31 @@
             background: rgba(0, 0, 0, 0.3);
         }
 
+        .video-container video:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: contain !important;
+        }
+
+        .video-container video:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: contain !important;
+        }
+
+        .video-container video:-webkit-full-screen-ancestor {
+            position: static !important;
+        }
+
+        @media screen and (orientation: portrait) {
+            .video-container video:-webkit-full-screen {
+                transform: rotate(90deg);
+                transform-origin: center center;
+                width: 100vh !important;
+                height: 100vw !important;
+            }
+        }
+
         /* 下载弹窗样式 */
         .download-modal {
             position: fixed;
@@ -957,7 +982,11 @@
                     </div>
                     <div class="video-wrapper">
                         <div class="video-container">
-                            <video id="weddingVideo" controls preload="metadata" poster="">
+                            <video id="weddingVideo" controls preload="metadata" poster=""
+                                   playsinline webkit-playsinline="true"
+                                   x5-video-player-type="h5"
+                                   x5-video-player-fullscreen="true"
+                                   x5-video-orientation="landscape">
                                 <source src="https://myvideos.tos-cn-beijing.volces.com/mvvideo.mp4" type="video/mp4">
                                 您的浏览器不支持视频播放
                             </video>
@@ -1322,6 +1351,79 @@
 
         scrollTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        const weddingVideo = document.getElementById('weddingVideo');
+
+        function lockLandscape() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {});
+            } else if (screen.lockOrientation) {
+                    screen.lockOrientation('landscape');
+                } else if (screen.mozLockOrientation) {
+                    screen.mozLockOrientation('landscape');
+                } else if (screen.msLockOrientation) {
+                    screen.msLockOrientation('landscape');
+                }
+        }
+
+        function unlockOrientation() {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            } else if (screen.unlockOrientation) {
+                screen.unlockOrientation();
+            } else if (screen.mozUnlockOrientation) {
+                screen.mozUnlockOrientation();
+            } else if (screen.msUnlockOrientation) {
+                screen.msUnlockOrientation();
+            }
+        }
+
+        function isFullscreen() {
+            return document.fullscreenElement ||
+                   document.webkitFullscreenElement ||
+                   document.mozFullScreenElement ||
+                   document.msFullscreenElement;
+        }
+
+        weddingVideo.addEventListener('fullscreenchange', () => {
+            if (isFullscreen()) {
+                lockLandscape();
+            } else {
+                unlockOrientation();
+            }
+        });
+
+        weddingVideo.addEventListener('webkitfullscreenchange', () => {
+            if (isFullscreen()) {
+                lockLandscape();
+            } else {
+                unlockOrientation();
+            }
+        });
+
+        weddingVideo.addEventListener('x5videoenterfullscreen', () => {
+            lockLandscape();
+        });
+
+        weddingVideo.addEventListener('x5videoexitfullscreen', () => {
+            unlockOrientation();
+        });
+
+        weddingVideo.addEventListener('webkitbeginfullscreen', () => {
+            lockLandscape();
+        });
+
+        weddingVideo.addEventListener('webkitendfullscreen', () => {
+            unlockOrientation();
+        });
+
+        weddingVideo.addEventListener('play', () => {
+            setTimeout(() => {
+                if (weddingVideo.webkitDisplayingFullscreen || isFullscreen()) {
+                    lockLandscape();
+                }
+            }, 300);
         });
 
         loadMorePhotos();
