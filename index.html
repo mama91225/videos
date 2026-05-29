@@ -333,6 +333,12 @@
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
         }
 
+        .video-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         .video-wrapper {
             position: relative;
             padding: 20px;
@@ -864,6 +870,11 @@
                 gap: 20px;
             }
 
+            .video-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
             .video-switch-btn {
                 width: 100%;
             }
@@ -978,7 +989,10 @@
                                 <p id="videoVersion">Wedding MV</p>
                             </div>
                         </div>
-                        <button class="video-switch-btn" id="downloadBtn">下载视频</button>
+                        <div class="video-buttons">
+                            <button class="video-switch-btn" id="switchVideoBtn">切换完整视频</button>
+                            <button class="video-switch-btn" id="downloadBtn">下载视频</button>
+                        </div>
                     </div>
                     <div class="video-wrapper">
                         <div class="video-container">
@@ -1142,6 +1156,44 @@
                 closeDownloadModal();
             }
         });
+
+        // 视频切换功能
+        const videoSources = {
+            mv: "https://myvideos.tos-cn-beijing.volces.com/mvvideo.mp4",
+            full: "https://myvideos.tos-cn-beijing.volces.com/fullvideo.mp4"
+        };
+
+        let currentVideo = 'mv';
+        const switchVideoBtn = document.getElementById('switchVideoBtn');
+        const weddingVideo = document.getElementById('weddingVideo');
+        const videoVersion = document.getElementById('videoVersion');
+        const videoTitle = weddingVideo.parentElement.querySelector('h3');
+
+        function switchVideo() {
+            const wasPlaying = !weddingVideo.paused;
+            const currentTime = weddingVideo.currentTime;
+            
+            if (currentVideo === 'mv') {
+                currentVideo = 'full';
+                switchVideoBtn.textContent = '切换婚礼MV';
+                videoVersion.textContent = 'Full Video';
+            } else {
+                currentVideo = 'mv';
+                switchVideoBtn.textContent = '切换完整视频';
+                videoVersion.textContent = 'Wedding MV';
+            }
+
+            const sourceElement = weddingVideo.querySelector('source');
+            sourceElement.src = videoSources[currentVideo];
+            weddingVideo.load();
+            
+            if (wasPlaying) {
+                weddingVideo.currentTime = currentTime;
+                weddingVideo.play().catch(() => {});
+            }
+        }
+
+        switchVideoBtn.addEventListener('click', switchVideo);
 
         const photoList = [];
         for (let i = 1; i <= TOTAL_PHOTOS; i++) {
@@ -1351,79 +1403,6 @@
 
         scrollTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        const weddingVideo = document.getElementById('weddingVideo');
-
-        function lockLandscape() {
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {});
-            } else if (screen.lockOrientation) {
-                    screen.lockOrientation('landscape');
-                } else if (screen.mozLockOrientation) {
-                    screen.mozLockOrientation('landscape');
-                } else if (screen.msLockOrientation) {
-                    screen.msLockOrientation('landscape');
-                }
-        }
-
-        function unlockOrientation() {
-            if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-            } else if (screen.unlockOrientation) {
-                screen.unlockOrientation();
-            } else if (screen.mozUnlockOrientation) {
-                screen.mozUnlockOrientation();
-            } else if (screen.msUnlockOrientation) {
-                screen.msUnlockOrientation();
-            }
-        }
-
-        function isFullscreen() {
-            return document.fullscreenElement ||
-                   document.webkitFullscreenElement ||
-                   document.mozFullScreenElement ||
-                   document.msFullscreenElement;
-        }
-
-        weddingVideo.addEventListener('fullscreenchange', () => {
-            if (isFullscreen()) {
-                lockLandscape();
-            } else {
-                unlockOrientation();
-            }
-        });
-
-        weddingVideo.addEventListener('webkitfullscreenchange', () => {
-            if (isFullscreen()) {
-                lockLandscape();
-            } else {
-                unlockOrientation();
-            }
-        });
-
-        weddingVideo.addEventListener('x5videoenterfullscreen', () => {
-            lockLandscape();
-        });
-
-        weddingVideo.addEventListener('x5videoexitfullscreen', () => {
-            unlockOrientation();
-        });
-
-        weddingVideo.addEventListener('webkitbeginfullscreen', () => {
-            lockLandscape();
-        });
-
-        weddingVideo.addEventListener('webkitendfullscreen', () => {
-            unlockOrientation();
-        });
-
-        weddingVideo.addEventListener('play', () => {
-            setTimeout(() => {
-                if (weddingVideo.webkitDisplayingFullscreen || isFullscreen()) {
-                    lockLandscape();
-                }
-            }, 300);
         });
 
         loadMorePhotos();
